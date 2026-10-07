@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Our Little Love Meter</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg1:#ffe3ee;--bg2:#ffd0e6;--card:#fffafc;--ink:#6b2a4a;--mute:#a8708c;--pink:#ff6fa8;--rose:#ff3d86;--soft:#ffe9f2;--line:#ffc2dc;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg1:#2a1020;--bg2:#3a1630;--card:#3b1a31;--ink:#ffd9ea;--mute:#d49ab8;--soft:#4a2040;--line:#6b3359}}
+:root[data-theme="dark"]{--bg1:#2a1020;--bg2:#3a1630;--card:#3b1a31;--ink:#ffd9ea;--mute:#d49ab8;--soft:#4a2040;--line:#6b3359}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Quicksand',system-ui,sans-serif;color:var(--ink);background:linear-gradient(160deg,var(--bg1),var(--bg2));min-height:100vh;padding:20px 14px 60px;overflow-x:hidden}
+.wrap{max-width:520px;margin:0 auto;position:relative;z-index:1}
+h1{font-family:'Pacifico',cursive;font-weight:400;text-align:center;font-size:2.1rem;margin:6px 0 2px;color:var(--rose)}
+.sub{text-align:center;color:var(--mute);margin:0 0 18px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:26px;padding:20px;margin-bottom:16px;box-shadow:0 8px 24px rgba(255,111,168,.18)}
+.big{text-align:center;font-family:'Pacifico',cursive;font-size:3.6rem;color:var(--rose);line-height:1}
+.msg{text-align:center;color:var(--mute);margin:8px 0 16px;min-height:1.4em;font-weight:600}
+.track{position:relative;height:30px;background:var(--soft);border-radius:99px;border:2px solid var(--line)}
+.fill{height:100%;border-radius:99px;background:repeating-linear-gradient(45deg,#ff8fbd 0 12px,#ff6fa8 12px 24px);transition:width 1s cubic-bezier(.3,1.4,.5,1);min-width:26px}
+.heart{position:absolute;top:50%;font-size:2rem;transform:translate(-50%,-50%);transition:left 1s cubic-bezier(.3,1.4,.5,1);animation:beat 1.2s infinite;filter:drop-shadow(0 2px 3px rgba(255,61,134,.4))}
+@keyframes beat{50%{transform:translate(-50%,-50%) scale(1.2)}}
+.ticks{display:flex;justify-content:space-between;color:var(--mute);font-size:.75rem;margin-top:6px;font-weight:700}
+.toggle{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+button{font:inherit;cursor:pointer}
+.tg{padding:11px;border-radius:16px;border:2px solid var(--line);background:var(--soft);color:var(--ink);font-weight:700}
+.tg.on{background:var(--pink);color:#fff;border-color:var(--rose)}
+label{display:block;font-weight:700;margin:12px 0 6px}
+input[type=range]{width:100%;accent-color:var(--rose)}
+textarea{width:100%;min-height:90px;border-radius:16px;border:2px solid var(--line);background:var(--soft);color:var(--ink);padding:12px;font:inherit;resize:vertical}
+textarea:focus{outline:3px solid var(--pink);outline-offset:1px}
+.prev{text-align:center;font-weight:700;color:var(--rose);margin:10px 0}
+.go{width:100%;padding:14px;border:0;border-radius:18px;background:linear-gradient(135deg,#ff8fbd,#ff3d86);color:#fff;font-weight:700;font-size:1.05rem;box-shadow:0 6px 14px rgba(255,61,134,.35)}
+.go:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.lock{text-align:center}
+.lock .em{font-size:2.4rem}
+.hint{font-size:.82rem;color:var(--mute);text-align:center;margin-top:8px}
+h2{font-family:'Pacifico',cursive;font-weight:400;margin:0 0 12px;font-size:1.4rem;color:var(--rose)}
+.entry{border-left:5px solid var(--pink);background:var(--soft);border-radius:6px 16px 16px 6px;padding:10px 12px;margin-bottom:10px}
+.entry.down{border-color:#b98cff}
+.eh{display:flex;justify-content:space-between;font-size:.82rem;color:var(--mute);font-weight:700}
+.ed{font-weight:700;color:var(--rose)}.entry.down .ed{color:#9a6be0}
+.en{margin:6px 0 0;white-space:pre-wrap;word-break:break-word}
+.empty{text-align:center;color:var(--mute)}
+.fl{position:fixed;bottom:-40px;opacity:.5;animation:up linear infinite;z-index:0;pointer-events:none}
+@keyframes up{to{transform:translateY(-115vh) rotate(25deg)}}
+.pop{animation:pop .6s}
+@keyframes pop{40%{transform:scale(1.25)}}
+</style>
+</head>
+<body>
+<div id="floaters"></div>
+<div class="wrap">
+  <h1>Our Little Love Meter</h1>
+  <p class="sub">one tiny step a day 🌸</p>
+
+  <div class="card">
+    <div class="big" id="pct">1%</div>
+    <div class="msg" id="msg"></div>
+    <div class="track"><div class="fill" id="fill"></div><div class="heart" id="heart">💗</div></div>
+    <div class="ticks"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+  </div>
+
+  <div class="card" id="panel"></div>
+
+  <div class="card">
+    <h2>Our Diary 📖</h2>
+    <div id="log"></div>
+  </div>
+</div>
+
+<script>
+const KEY='loveMeterV1';
+let S={percent:1,entries:[]};
+try{const r=localStorage.getItem(KEY);if(r){const p=JSON.parse(r);if(p&&typeof p.percent==='number'&&Array.isArray(p.entries))S=p;}}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
+const $=id=>document.getElementById(id);
+const dayKey=d=>{d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let mode='add',amt=5;
+
+function words(p){
+  if(p<10)return"Just a tiny seed 🌱";
+  if(p<25)return"A little spark ✨";
+  if(p<45)return"Butterflies are starting 🦋";
+  if(p<65)return"Getting really sweet 🍓";
+  if(p<85)return"Heart is racing 💞";
+  if(p<100)return"So close to forever 💍";
+  return"Perfect love 👑";
+}
+function lockedToday(){return S.entries.length&&S.entries[0].day===dayKey();}
+function nextVal(){return Math.max(1,Math.min(100,S.percent+(mode==='add'?amt:-amt)));}
+
+function drawBar(anim){
+  $('pct').textContent=S.percent+'%';
+  $('msg').textContent=words(S.percent);
+  $('fill').style.width=S.percent+'%';
+  $('heart').style.left='calc('+S.percent+'% - '+(S.percent*0.0)+'px)';
+  if(anim){$('pct').classList.remove('pop');void $('pct').offsetWidth;$('pct').classList.add('pop');}
+}
+function drawLog(){
+  if(!S.entries.length){$('log').innerHTML='<p class="empty">No pages yet. The first one is waiting for you 💌</p>';return;}
+  $('log').innerHTML=S.entries.map(e=>{
+    const up=e.delta>=0,d=new Date(e.ts);
+    return '<div class="entry '+(up?'':'down')+'"><div class="eh"><span>'+d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'})+'</span><span class="ed">'+(up?'+':'')+e.delta+'% → '+e.to+'%</span></div><p class="en">'+esc(e.note)+'</p></div>';
+  }).join('');
+}
+function countdown(){
+  const n=new Date(),m=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1);
+  const s=Math.floor((m-n)/1000);
+  return Math.floor(s/3600)+'h '+String(Math.floor(s%3600/60)).padStart(2,'0')+'m';
+}
+function drawPanel(){
+  if(lockedToday()){
+    $('panel').innerHTML='<div class="lock"><div class="em">💌</div><h2>Today\'s page is done</h2><p>Come back tomorrow, sweetheart.<br>Next page opens in <b id="cd">'+countdown()+'</b></p></div>';
+    return;
+  }
+  $('panel').innerHTML=
+   '<h2>Today\'s page ✍️</h2>'+
+   '<div class="toggle"><button class="tg" id="tAdd">💗 Add</button><button class="tg" id="tRem">💔 Remove</button></div>'+
+   '<label>How much? <span id="av">'+amt+'</span>%</label>'+
+   '<input type="range" id="amt" min="1" max="50" value="'+amt+'">'+
+   '<label for="note">Why? (write this first)</label>'+
+   '<textarea id="note" placeholder="Tell the real reason behind today\'s number..." maxlength="600"></textarea>'+
+   '<div class="prev" id="prev"></div>'+
+   '<button class="go" id="go" disabled>Save to our diary 💕</button>'+
+   '<div class="hint">Only one change per day, and a note is needed first.</div>';
+  $('tAdd').onclick=()=>{mode='add';upd();};
+  $('tRem').onclick=()=>{mode='rem';upd();};
+  $('amt').oninput=e=>{amt=+e.target.value;upd();};
+  $('note').oninput=upd;
+  $('go').onclick=commit;
+  upd();
+}
+function upd(){
+  if(!$('go'))return;
+  $('tAdd').classList.toggle('on',mode==='add');
+  $('tRem').classList.toggle('on',mode==='rem');
+  $('av').textContent=amt;
+  const nv=nextVal();
+  $('prev').textContent=S.percent+'%  →  '+nv+'%'+(mode==='rem'&&S.percent-amt<1?'  (never below 1% 🌷)':'');
+  $('go').disabled=$('note').value.trim().length<5||nv===S.percent;
+}
+function commit(){
+  const note=$('note').value.trim();
+  if(note.length<5||lockedToday())return;
+  const to=nextVal();
+  if(to===S.percent)return;
+  S.entries.unshift({ts:Date.now(),day:dayKey(),delta:to-S.percent,to:to,note:note});
+  S.percent=to;
+  save();
+  drawBar(true);drawLog();drawPanel();
+}
+setInterval(()=>{
+  if(lockedToday()){const c=$('cd');if(c)c.textContent=countdown();}
+  else if(!$('go'))drawPanel();
+},30000);
+
+const fl=$('floaters'),em=['💗','🌸','✨','💕','🎀','🌷'];
+for(let i=0;i<14;i++){const s=document.createElement('span');s.className='fl';s.textContent=em[i%em.length];s.style.left=(Math.random()*96)+'%';s.style.fontSize=(14+Math.random()*18)+'px';s.style.animationDuration=(12+Math.random()*14)+'s';s.style.animationDelay=(-Math.random()*20)+'s';fl.appendChild(s);}
+
+drawBar(false);drawLog();drawPanel();
+</script>
+</body>
+</html>
